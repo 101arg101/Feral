@@ -1,0 +1,7 @@
+## Author: 101arg101
+## Interface: 11200
+## Title: Feral
+## Notes: Turtle-WoW 1.18.0 one-button addon for feral druids. Made by Fryn on Nordanaar
+## Version: 0.1
+Feral.xml
+Feral.lua
