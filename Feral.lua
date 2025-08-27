@@ -3,15 +3,15 @@ function Feral_OnLoad()
   this:RegisterEvent("PLAYER_ENTERING_WORLD")
   this:RegisterEvent("ADDON_LOADED")
   DEFAULT_CHAT_FRAME:AddMessage("Loading Feral...")
-  SlashCmdList["FELINE"] = function(rotation)
+  SlashCmdList["FELINE"] = function(subcmd)
     local opts = {}
     opts.time = GetTime()
     opts.isTarget, opts.targetGUID = UnitExists("target")
     opts.curseOptions = {}
     opts.isStealth = isBuff(F_.stealthBuff)
-    -- < 16 sec means the tiger's fury is tracked by the addon and we know there's less than 2 seconds left
+    -- < 17 sec means the tiger's fury is tracked by the addon and we know there's less than 2 seconds left
     -- > 18 sec means the tiger's fury buff was manually cast, and the addon doesn't know how much time is left
-    opts.isFury = isBuff(F_.tigersFuryBuff) and (opts.time - F_.lastFury < 16 or 18 < opts.time - F_.lastFury)
+    opts.isFury = isBuff(F_.tigersFuryBuff) and (opts.time - F_.lastFury < 17 or 18 < opts.time - F_.lastFury)
     opts.energy, opts.mana = UnitMana("player")
     opts.pts = GetComboPoints()
     opts.isReshiftable = opts.mana >= F_.shiftCost and F_.isReshift
@@ -51,22 +51,40 @@ function Feral_OnLoad()
       mauler(opts)
     elseif (subcmd == "reload") then
       feralInit()
+    elseif (subcmd == "help 1" or subcmd == "help clawBite") then
+      DEFAULT_CHAT_FRAME:AddMessage(" ")
+    elseif (subcmd == "help 2" or subcmd == "help clawBleed") then
+      DEFAULT_CHAT_FRAME:AddMessage(" ")
+    elseif (subcmd == "help 3" or subcmd == "help shredBite") then
+      DEFAULT_CHAT_FRAME:AddMessage(" ")
+    elseif (subcmd == "help 4" or subcmd == "help shredBleed") then
+      DEFAULT_CHAT_FRAME:AddMessage(" ")
+    elseif (subcmd == "help 5" or subcmd == "help multiBleed") then
+      DEFAULT_CHAT_FRAME:AddMessage(" ")
+    elseif (subcmd == "help 6" or subcmd == "help noBleedClaw") then
+      DEFAULT_CHAT_FRAME:AddMessage(" ")
+    elseif (subcmd == "help 7" or subcmd == "help noBleedShred") then
+      DEFAULT_CHAT_FRAME:AddMessage(" ")
+    elseif (subcmd == "help 8" or subcmd == "help mauler") then
+      DEFAULT_CHAT_FRAME:AddMessage(" ")
     else
       DEFAULT_CHAT_FRAME:AddMessage("To use Feral addon, create a macro that uses the following format:")
-      DEFAULT_CHAT_FRAME:AddMessage("/feral <rotation number 1-7>")
+      DEFAULT_CHAT_FRAME:AddMessage("/feral [name or number of rotation]")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
-      DEFAULT_CHAT_FRAME:AddMessage("The following rotations are recommended:")
-      DEFAULT_CHAT_FRAME:AddMessage("1: prowl, tiger's fury, pounce, rip, rake, claw-spam, ferocious bite")
-      DEFAULT_CHAT_FRAME:AddMessage("2: prowl, tiger's fury, pounce, rake, claw-spam, rip")
-      DEFAULT_CHAT_FRAME:AddMessage("3: prowl, tiger's fury, pounce, rip, rake, shred-spam, ferocious bite")
-      DEFAULT_CHAT_FRAME:AddMessage("4: prowl, tiger's fury, pounce, rake, shred-spam, rip")
-      DEFAULT_CHAT_FRAME:AddMessage("5: prowl, tiger's fury, pounce, rake, rip, cycle target")
-      DEFAULT_CHAT_FRAME:AddMessage("6: prowl, tiger's fury, ravage, claw-spam, ferocious bite")
-      DEFAULT_CHAT_FRAME:AddMessage("7: prowl, tiger's fury, ravage, shred-spam, ferocious bite")
-      DEFAULT_CHAT_FRAME:AddMessage("8: maul (reshifts when not enough rage for bear's maul)")
+      DEFAULT_CHAT_FRAME:AddMessage("The following rotations are implemented:")
+      DEFAULT_CHAT_FRAME:AddMessage("1 clawBite: prowl, tiger's fury, pounce, rip, rake, claw-spam, ferocious bite")
+      DEFAULT_CHAT_FRAME:AddMessage("2 clawBleed: prowl, tiger's fury, pounce, rake, claw-spam, rip")
+      DEFAULT_CHAT_FRAME:AddMessage("3 shredBite: prowl, tiger's fury, pounce, rip, rake, shred-spam, ferocious bite")
+      DEFAULT_CHAT_FRAME:AddMessage("4 shredBleed: prowl, tiger's fury, pounce, rake, shred-spam, rip")
+      DEFAULT_CHAT_FRAME:AddMessage("5 multiBleed: prowl, tiger's fury, pounce, rake, rip, cycle target")
+      DEFAULT_CHAT_FRAME:AddMessage("6 noBleedClaw: prowl, tiger's fury, ravage, claw-spam, ferocious bite")
+      DEFAULT_CHAT_FRAME:AddMessage("7 noBleedShred: prowl, tiger's fury, ravage, shred-spam, ferocious bite")
+      DEFAULT_CHAT_FRAME:AddMessage("8 mauler: maul (reshifts when not enough rage for bear's maul)")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
       DEFAULT_CHAT_FRAME:AddMessage("Example macro:")
       DEFAULT_CHAT_FRAME:AddMessage("/feral 1")
+      DEFAULT_CHAT_FRAME:AddMessage(" ")
+      DEFAULT_CHAT_FRAME:AddMessage("for more information about a rotation, use the command: /feral help [name or number of rotation]")
     end
   end
   
@@ -151,6 +169,14 @@ function feralRavage(opts)
   end
 end
 
+function reshiftOrCast(spellName, opts)
+  if (not F_.isFrenzy and opts.energy < F_.costs[spellName] and opts.isReshiftable) then
+    CastSpellByName("reshift")
+  else
+    CastSpellByName(spellName)
+  end
+end
+
 function clawBite(opts)
   -- prowl, tiger's fury, pounce, rake, rip, claw-spam, ferocious bite
   feralStealth(opts)
@@ -183,7 +209,11 @@ function clawBleed(opts)
     if (opts.pts < 5) then
       feralClaw(opts)
     else
-      feralRip(opts)
+      if (Cursive.curses:HasCurse('rip', opts.targetGUID, 0)) then 
+        feralFerocious(opts)
+      else
+        feralRip(opts)
+      end
     end
   end
 end
@@ -220,7 +250,11 @@ function shredBleed(opts)
     if (opts.pts < 5) then
       feralShred(opts)
     else
-      feralRip(opts)
+      if (Cursive.curses:HasCurse('rip', opts.targetGUID, 0)) then 
+        feralFerocious(opts)
+      else
+        feralRip(opts)
+      end
     end
   end
 end
@@ -233,10 +267,10 @@ function multiBleed(opts)
     feralPounce(opts)
     
     if (Cursive.curses:HasCurse("rake", opts.targetGUID, 0)) then
-      Cursive:Curse("rip", opts.targetGUID, 0)
-      Cursive:Multicurse("rake", "RAID_MARK", 0)
+      Cursive:Curse("rip", opts.targetGUID, opts.curseOptions)
+      Cursive:Multicurse("rake", "RAID_MARK", opts.curseOptions)
     else
-      Cursive:Multicurse("rake", "RAID_MARK", 0)
+      Cursive:Multicurse("rake", "RAID_MARK", opts.curseOptions)
     end
     
     if (opts.pts < 5) then
@@ -324,6 +358,7 @@ function feralInit()
   F_.genesisSet = 0
   F_.cenarionSet = 0
   F_.lastFury = GetTime()
+  F_.costs = {}
   
   if (helm ~= nil) then
     if (string.find(helm, "Genesis Helmet")) then
