@@ -25,7 +25,7 @@ To use the Feral addon, create a macro that uses the following format
 2. "clawBleed" - prowl, tiger's fury, pounce, rake, claw-spam, rip
 3. "shredBite" - prowl, tiger's fury, pounce, rip, rake, shred-spam, ferocious bite
 4. "shredBleed" - prowl, tiger's fury, pounce, rake, shred-spam, rip
-5. "multiBleed" - prowl, tiger's fury, pounce, rake, rip, cycle target
+5. "multiBleed" - prowl, tiger's fury, pounce, rake, rip, cycle target based on cursive's raid marks priority
 6. "noBleedClaw" - prowl, tiger's fury, ravage, claw-spam, ferocious bite
 7. "noBleedShred" - prowl, tiger's fury, ravage, shred-spam, ferocious bite
 8. "mauler" - maul (for bears)

@@ -266,11 +266,13 @@ function multiBleed(opts)
   if (opts.isTarget) then
     feralPounce(opts)
     
-    if (Cursive.curses:HasCurse("rake", opts.targetGUID, 0)) then
-      Cursive:Curse("rip", opts.targetGUID, opts.curseOptions)
-      Cursive:Multicurse("rake", "RAID_MARK", opts.curseOptions)
+    if(Cursive.curses:HasCurse("rip", opts.targetGUID, 0)) then
+      Cursive:Target("rake", "RAID_MARK", opts.curseOptions)
+      opts.isTarget, opts.targetGUID = UnitExists("target")
+      Cursive:Curse("rake", opts.targetGUID, opts.curseOptions)
     else
-      Cursive:Multicurse("rake", "RAID_MARK", opts.curseOptions)
+      Cursive:Curse("rip", opts.targetGUID, opts.curseOptions)
+      Cursive:Curse("rake", opts.targetGUID, opts.curseOptions)
     end
     
     if (opts.pts < 5) then
