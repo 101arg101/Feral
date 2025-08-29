@@ -4,17 +4,15 @@ One-button cat dps addon for Turtle World of Warcraft (1.18.0). Also supports re
 Author: 101arg101 (Fryn on Nordanaar)
 
 # Prerequisites
-- Install SuperWoW
-- Install Cursive
-- Place the Attack ability somewhere on your action bars.
+- Install [SuperWoW](https://github.com/balakethelock/SuperWoW)
+- Install [Cursive](https://github.com/pepopo978/Cursive)
 
 # Installation
-In the Turtle WoW client, navigate to the Addons tab and click "Add new Addon". Paste <code>https://github.com/101arg101/Feral</code> into the text box and install. You can manually install this addon by unzipping the KittyDPS folder into WoW directory Interface/Addons folder and removing the -master from the folder name.
+In the Turtle WoW client, navigate to the Addons tab and click "Add new Addon". Paste <code>https://github.com/101arg101/Feral</code> into the text box and install. You can manually install this addon by downloading from here, unzipping this addon into WoW's Interface/Addons folder, and removing the -master from the folder name.
 
 # Features
 - Casts Reshift when you're low on energy/rage and don't have important buffs that will get wiped when reshifting.
 - Scans your gear to determine cost reductions for your abilities.
-- *(todo)* Intelligently casts Claw/Shred/Ferocious Bite when your target is expected to take more damage from them than from Rake/Rip.
 
 # Usage
 To use the Feral addon, create a macro that uses the following format

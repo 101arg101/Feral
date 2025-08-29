@@ -52,21 +52,53 @@ function Feral_OnLoad()
     elseif (subcmd == "reload") then
       feralInit()
     elseif (subcmd == "help 1" or subcmd == "help clawBite") then
+      DEFAULT_CHAT_FRAME:AddMessage("To use:")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral 1")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral clawBite")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
+      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Keeps Rake and Rip applied. Won't wait for 5-point Rip. Builds up combo points with Claw for Ferocious Bite.")
     elseif (subcmd == "help 2" or subcmd == "help clawBleed") then
+      DEFAULT_CHAT_FRAME:AddMessage("To use:")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral 2")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral clawBleed")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
+      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Keeps Rake applied, then builds up combo points with Claw for a 5-point Rip.")
     elseif (subcmd == "help 3" or subcmd == "help shredBite") then
+      DEFAULT_CHAT_FRAME:AddMessage("To use:")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral 3")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral shredBite")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
+      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Keeps Rake and Rip applied. Won't wait for 5-point Rip. Builds up combo points with Shred for Ferocious Bite.")
     elseif (subcmd == "help 4" or subcmd == "help shredBleed") then
+      DEFAULT_CHAT_FRAME:AddMessage("To use:")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral 4")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral shredBleed")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
+      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Keeps Rake applied, then builds up combo points with Shred for a 5-point Rip.")
     elseif (subcmd == "help 5" or subcmd == "help multiBleed") then
+      DEFAULT_CHAT_FRAME:AddMessage("To use:")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral 5")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral multiBleed")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
+      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Keeps Rake and Rip applied. Won't wait for a 5-point Rip. Builds up combo points with Claw as long as all nearby targets have Rake and Rip.")
     elseif (subcmd == "help 6" or subcmd == "help noBleedClaw") then
+      DEFAULT_CHAT_FRAME:AddMessage("To use:")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral 6")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral noBleedClaw")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
+      DEFAULT_CHAT_FRAME:AddMessage("Casts Ravage from stealth. Builds up combo points with Claw for Ferocious Bite.")
     elseif (subcmd == "help 7" or subcmd == "help noBleedShred") then
+      DEFAULT_CHAT_FRAME:AddMessage("To use:")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral 7")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral noBleedShred")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
+      DEFAULT_CHAT_FRAME:AddMessage("Casts Ravage from stealth. Builds up combo points with Shred for Ferocious Bite.")
     elseif (subcmd == "help 8" or subcmd == "help mauler") then
+      DEFAULT_CHAT_FRAME:AddMessage("To use:")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral 8")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral mauler")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
+      DEFAULT_CHAT_FRAME:AddMessage("Requires a Bear Form. Casts Reshift if you don't have enough energy for Maul and Enrage active.")
     else
       DEFAULT_CHAT_FRAME:AddMessage("To use Feral addon, create a macro that uses the following format:")
       DEFAULT_CHAT_FRAME:AddMessage("/feral [name or number of rotation]")
@@ -79,7 +111,7 @@ function Feral_OnLoad()
       DEFAULT_CHAT_FRAME:AddMessage("5 multiBleed: prowl, tiger's fury, pounce, rake, rip, cycle target")
       DEFAULT_CHAT_FRAME:AddMessage("6 noBleedClaw: prowl, tiger's fury, ravage, claw-spam, ferocious bite")
       DEFAULT_CHAT_FRAME:AddMessage("7 noBleedShred: prowl, tiger's fury, ravage, shred-spam, ferocious bite")
-      DEFAULT_CHAT_FRAME:AddMessage("8 mauler: maul (reshifts when not enough rage for bear's maul)")
+      DEFAULT_CHAT_FRAME:AddMessage("8 mauler: maul")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
       DEFAULT_CHAT_FRAME:AddMessage("Example macro:")
       DEFAULT_CHAT_FRAME:AddMessage("/feral 1")
@@ -266,19 +298,25 @@ function multiBleed(opts)
   if (opts.isTarget) then
     feralPounce(opts)
     
-    if(Cursive.curses:HasCurse("rip", opts.targetGUID, 0)) then
-      Cursive:Target("rake", "RAID_MARK", opts.curseOptions)
-      opts.isTarget, opts.targetGUID = UnitExists("target")
-      Cursive:Curse("rake", opts.targetGUID, opts.curseOptions)
-    else
-      Cursive:Curse("rip", opts.targetGUID, opts.curseOptions)
-      Cursive:Curse("rake", opts.targetGUID, opts.curseOptions)
-    end
+    local isRip = Cursive.curses:HasCurse("rip", opts.targetGUID, 0)
+    local isRake = Cursive.curses:HasCurse("rake", opts.targetGUID, 0)
     
-    if (opts.pts < 5) then
-      feralClaw(opts)
+    if (not isRake) then
+      CastSpellByName("rake")
+    elseif (isRake and not isRip) then
+      CastSpellByName("rip")  
     else
-      feralFerocious(opts)
+      -- cursive does not want to target neutral mobs, even if they're attacking you :(
+      local nextGUID = Cursive:GetTarget("rake", "HIGHEST_HP_RAID_MARK", opts.curseOptions)
+      if (nextGUID and not Cursive.curses:HasCurse("rake", nextGUID, 0)) then
+        TargetUnit(nextGUID)
+        opts.targetGUID = nextGUID
+        CastSpellByName("rake")
+      elseif (opts.pts < 5) then
+        CastSpellByName("claw")
+      elseif (opts.pts >= 5) then
+        CastSpellByName("ferocious bite")
+      end
     end
   end
 end
