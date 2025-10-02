@@ -21,97 +21,135 @@ function Feral_OnLoad()
       opts.isTarget, opts.targetGUID = UnitExists("target")
     end
     
-    if (subcmd == "1" or subcmd == "clawBite") then
-      -- prowl, tiger's fury, pounce, rake, rip, claw-spam, ferocious bite
-      clawBite(opts)
-    elseif (subcmd == "2" or subcmd == "clawBleed") then
-      -- prowl, tiger's fury, pounce, rake, claw-spam, rip
-      clawBleed(opts)
-    elseif (subcmd == "3" or subcmd == "shredBite") then
-      -- prowl, tiger's fury, pounce, rip, rake, shred-spam, ferocious bite
-      shredBite(opts)
-    elseif (subcmd == "4" or subcmd == "shredBleed") then
-      -- prowl, tiger's fury, pounce, rake, shred-spam, rip
-      shredBleed(opts)
-    elseif (subcmd == "5" or subcmd == "multiBleed") then
-      -- prowl, tiger's fury, pounce, rake, rip, cycle target
-      multiBleed(opts)
-      -- "multicurse"
-      --  local spellName, priority, optionsStr = Cursive.utils.strsplit("|", args)
-      --  local options = parseOptions(optionsStr)
-      --  Cursive:Multicurse(spellName, priority, curseOptions)
-    elseif (subcmd == "6" or subcmd == "noBleedClaw") then
-      -- prowl, tiger's fury, ravage, claw-spam, ferocious bite
-      noBleedClaw(opts)
-    elseif (subcmd == "7" or subcmd == "noBleedShred") then
-      -- prowl, tiger's fury, ravage, shred-spam, ferocious bite
-      noBleedShred(opts)
-    elseif (subcmd == "8" or subcmd == "mauler") then
+    if (subcmd == "0" or subcmd == "maul") then
       -- Bear power shift
       mauler(opts)
+    elseif (subcmd == "1" or subcmd == "multibleed") then
+      -- prowl, tiger's fury, pounce, rake, rip, cycle target
+      multiBleed(opts)
+    elseif (subcmd == "2" or subcmd == "claw-bite") then
+      -- prowl, tiger's fury, pounce, rake, rip, claw-spam, ferocious bite
+      clawBite(opts)
+    elseif (subcmd == "3" or subcmd == "claw-rip") then
+      -- prowl, tiger's fury, pounce, rake, claw-spam, rip
+      clawBleed(opts)
+    elseif (subcmd == "4" or subcmd == "shred-bite") then
+      -- prowl, tiger's fury, pounce, rip, rake, shred-spam, ferocious bite
+      shredBite(opts)
+    elseif (subcmd == "5" or subcmd == "shred-rip") then
+      -- prowl, tiger's fury, pounce, rake, shred-spam, rip
+      shredBleed(opts)
+    elseif (subcmd == "6" or subcmd == "claw-nobleed") then
+      -- prowl, tiger's fury, ravage, claw-spam, ferocious bite
+      noBleedClaw(opts)
+    elseif (subcmd == "7" or subcmd == "shred-nobleed") then
+      -- prowl, tiger's fury, ravage, shred-spam, ferocious bite
+      noBleedShred(opts)
+    elseif (subcmd == "8" or subcmd == "auto-bite") then
+      -- detect if behind then claw/shred
+      if UnitXP("behind","player","target") then
+        shredBite(opts)
+      else
+        clawBite(opts)
+      end
+    elseif (subcmd == "9" or subcmd == "auto-rip") then
+      -- detect if behind then claw/shred
+      if UnitXP("behind","player","target") then
+        shredBleed(opts)
+      else
+        clawBleed(opts)
+      end
+    elseif (subcmd == "10" or subcmd == "auto-nobleed") then
+      -- detect if behind then claw/shred
+      if UnitXP("behind","player","target") then
+        noBleedShred(opts)
+      else
+        noBleedClaw(opts)
+      end
     elseif (subcmd == "reload") then
       feralInit()
-    elseif (subcmd == "help 1" or subcmd == "help clawBite") then
+    elseif (subcmd == "help 0" or subcmd == "help maul") then
+      DEFAULT_CHAT_FRAME:AddMessage("To use:")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral 0")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral maul")
+      DEFAULT_CHAT_FRAME:AddMessage(" ")
+      DEFAULT_CHAT_FRAME:AddMessage("Requires a Bear Form. Casts Reshift if you don't have enough energy for Maul and don't have Enrage active.")
+    elseif (subcmd == "help 1" or subcmd == "help multibleed") then
       DEFAULT_CHAT_FRAME:AddMessage("To use:")
       DEFAULT_CHAT_FRAME:AddMessage("  /feral 1")
-      DEFAULT_CHAT_FRAME:AddMessage("  /feral clawBite")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral multibleed")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
-      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Keeps Rake and Rip applied. Won't wait for 5-point Rip. Builds up combo points with Claw for Ferocious Bite.")
-    elseif (subcmd == "help 2" or subcmd == "help clawBleed") then
+      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Keeps Rake and Rip applied. Builds up combo points with Shred/Claw as long as all nearby targets have Rake and Rip.")
+    elseif (subcmd == "help 2" or subcmd == "help claw-bite") then
       DEFAULT_CHAT_FRAME:AddMessage("To use:")
       DEFAULT_CHAT_FRAME:AddMessage("  /feral 2")
-      DEFAULT_CHAT_FRAME:AddMessage("  /feral clawBleed")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral claw-bite")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
-      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Keeps Rake applied, then builds up combo points with Claw for a 5-point Rip.")
-    elseif (subcmd == "help 3" or subcmd == "help shredBite") then
+      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Keeps Rake and Rip applied. Keeps Rake and 1-point Rip applied. Builds up combo points with Claw for Ferocious Bite.")
+    elseif (subcmd == "help 3" or subcmd == "help claw-bleed") then
       DEFAULT_CHAT_FRAME:AddMessage("To use:")
       DEFAULT_CHAT_FRAME:AddMessage("  /feral 3")
-      DEFAULT_CHAT_FRAME:AddMessage("  /feral shredBite")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral claw-bleed")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
-      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Keeps Rake and Rip applied. Won't wait for 5-point Rip. Builds up combo points with Shred for Ferocious Bite.")
-    elseif (subcmd == "help 4" or subcmd == "help shredBleed") then
+      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Keeps Rake applied, then builds up combo points with Claw for a 5-point Rip.")
+    elseif (subcmd == "help 4" or subcmd == "help shred-bite") then
       DEFAULT_CHAT_FRAME:AddMessage("To use:")
       DEFAULT_CHAT_FRAME:AddMessage("  /feral 4")
-      DEFAULT_CHAT_FRAME:AddMessage("  /feral shredBleed")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral shred-bite")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
-      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Keeps Rake applied, then builds up combo points with Shred for a 5-point Rip.")
-    elseif (subcmd == "help 5" or subcmd == "help multiBleed") then
+      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Keeps Rake and Rip applied. Won't wait for 5-point Rip. Builds up combo points with Shred for Ferocious Bite.")
+    elseif (subcmd == "help 5" or subcmd == "help shred-bleed") then
       DEFAULT_CHAT_FRAME:AddMessage("To use:")
       DEFAULT_CHAT_FRAME:AddMessage("  /feral 5")
-      DEFAULT_CHAT_FRAME:AddMessage("  /feral multiBleed")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral shred-bleed")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
-      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Keeps Rake and Rip applied. Won't wait for a 5-point Rip. Builds up combo points with Claw as long as all nearby targets have Rake and Rip.")
-    elseif (subcmd == "help 6" or subcmd == "help noBleedClaw") then
+      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Keeps Rake applied, then builds up combo points with Shred for a 5-point Rip.")
+    elseif (subcmd == "help 6" or subcmd == "help claw-nobleed") then
       DEFAULT_CHAT_FRAME:AddMessage("To use:")
       DEFAULT_CHAT_FRAME:AddMessage("  /feral 6")
-      DEFAULT_CHAT_FRAME:AddMessage("  /feral noBleedClaw")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral claw-nobleed")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
       DEFAULT_CHAT_FRAME:AddMessage("Casts Ravage from stealth. Builds up combo points with Claw for Ferocious Bite.")
-    elseif (subcmd == "help 7" or subcmd == "help noBleedShred") then
+    elseif (subcmd == "help 7" or subcmd == "help shred-nobleed") then
       DEFAULT_CHAT_FRAME:AddMessage("To use:")
       DEFAULT_CHAT_FRAME:AddMessage("  /feral 7")
-      DEFAULT_CHAT_FRAME:AddMessage("  /feral noBleedShred")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral shred-nobleed")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
       DEFAULT_CHAT_FRAME:AddMessage("Casts Ravage from stealth. Builds up combo points with Shred for Ferocious Bite.")
-    elseif (subcmd == "help 8" or subcmd == "help mauler") then
+    elseif (subcmd == "help 8" or subcmd == "help auto-bite") then
       DEFAULT_CHAT_FRAME:AddMessage("To use:")
       DEFAULT_CHAT_FRAME:AddMessage("  /feral 8")
-      DEFAULT_CHAT_FRAME:AddMessage("  /feral mauler")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral auto-bite")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
-      DEFAULT_CHAT_FRAME:AddMessage("Requires a Bear Form. Casts Reshift if you don't have enough energy for Maul and Enrage active.")
+      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Uses UnitXP to detect if you're behind the target and chooses to Shred or Claw. Keeps Rake and 1-point Rip applied. Builds up combo points for Ferocious Bite.")
+    elseif (subcmd == "help 9" or subcmd == "help auto-rip") then
+      DEFAULT_CHAT_FRAME:AddMessage("To use:")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral 9")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral auto-rip")
+      DEFAULT_CHAT_FRAME:AddMessage(" ")
+      DEFAULT_CHAT_FRAME:AddMessage("Casts Pounce from stealth. Uses UnitXP to detect if you're behind the target and chooses to Shred or Claw. Keeps Rake and 1-point Rip applied. Builds up combo points for Rip.")
+    elseif (subcmd == "help 10" or subcmd == "help auto-nobleed") then
+      DEFAULT_CHAT_FRAME:AddMessage("To use:")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral 9")
+      DEFAULT_CHAT_FRAME:AddMessage("  /feral auto-nobleed")
+      DEFAULT_CHAT_FRAME:AddMessage(" ")
+      DEFAULT_CHAT_FRAME:AddMessage("Casts Ravage from stealth. Uses UnitXP to detect if you're behind the target and chooses to Shred or Claw. Builds up combo points for Ferocious Bite.")
     else
       DEFAULT_CHAT_FRAME:AddMessage("To use Feral addon, create a macro that uses the following format:")
       DEFAULT_CHAT_FRAME:AddMessage("/feral [name or number of rotation]")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
       DEFAULT_CHAT_FRAME:AddMessage("The following rotations are implemented:")
-      DEFAULT_CHAT_FRAME:AddMessage("1 clawBite: prowl, tiger's fury, pounce, rip, rake, claw-spam, ferocious bite")
-      DEFAULT_CHAT_FRAME:AddMessage("2 clawBleed: prowl, tiger's fury, pounce, rake, claw-spam, rip")
-      DEFAULT_CHAT_FRAME:AddMessage("3 shredBite: prowl, tiger's fury, pounce, rip, rake, shred-spam, ferocious bite")
-      DEFAULT_CHAT_FRAME:AddMessage("4 shredBleed: prowl, tiger's fury, pounce, rake, shred-spam, rip")
-      DEFAULT_CHAT_FRAME:AddMessage("5 multiBleed: prowl, tiger's fury, pounce, rake, rip, cycle target")
-      DEFAULT_CHAT_FRAME:AddMessage("6 noBleedClaw: prowl, tiger's fury, ravage, claw-spam, ferocious bite")
-      DEFAULT_CHAT_FRAME:AddMessage("7 noBleedShred: prowl, tiger's fury, ravage, shred-spam, ferocious bite")
-      DEFAULT_CHAT_FRAME:AddMessage("8 mauler: maul")
+      DEFAULT_CHAT_FRAME:AddMessage("0 maul: maul")
+      DEFAULT_CHAT_FRAME:AddMessage("1 multibleed: prowl, tiger's fury, pounce, rake, rip, cycle target")
+      DEFAULT_CHAT_FRAME:AddMessage("2 claw-bite: prowl, tiger's fury, pounce, rip, rake, claw-spam, ferocious bite")
+      DEFAULT_CHAT_FRAME:AddMessage("3 claw-rip: prowl, tiger's fury, pounce, rake, claw-spam, rip")
+      DEFAULT_CHAT_FRAME:AddMessage("4 shred-bite: prowl, tiger's fury, pounce, rip, rake, shred-spam, ferocious bite")
+      DEFAULT_CHAT_FRAME:AddMessage("5 shred-rip: prowl, tiger's fury, pounce, rake, shred-spam, rip")
+      DEFAULT_CHAT_FRAME:AddMessage("6 claw-nobleed: prowl, tiger's fury, ravage, claw-spam, ferocious bite")
+      DEFAULT_CHAT_FRAME:AddMessage("7 shred-nobleed: prowl, tiger's fury, ravage, shred-spam, ferocious bite")
+      DEFAULT_CHAT_FRAME:AddMessage("8 auto-bite: prowl, tiger's fury, pounce, claw/shred-spam, ferocious bite")
+      DEFAULT_CHAT_FRAME:AddMessage("9 auto-rip: prowl, tiger's fury, pounce, claw/shred-spam, rip")
+      DEFAULT_CHAT_FRAME:AddMessage("10 auto-nobleed: prowl, tiger's fury, ravage, claw/shred-spam, ferocious bite")
       DEFAULT_CHAT_FRAME:AddMessage(" ")
       DEFAULT_CHAT_FRAME:AddMessage("Example macro:")
       DEFAULT_CHAT_FRAME:AddMessage("/feral 1")
@@ -184,6 +222,14 @@ function feralShred(opts)
     CastSpellByName("reshift")
   else
     CastSpellByName("shred")
+  end
+end
+
+function feralClawShred(opts)
+  if (opts.isBehind) then
+    feralClaw(opts)
+  else
+    feralShred(opts)
   end
 end
 
@@ -313,7 +359,11 @@ function multiBleed(opts)
         opts.targetGUID = nextGUID
         CastSpellByName("rake")
       elseif (opts.pts < 5) then
-        CastSpellByName("claw")
+        if UnitXP("behind","player","target") then
+          CastSpellByName("shred")
+        else
+          CastSpellByName("claw")
+        end
       elseif (opts.pts >= 5) then
         CastSpellByName("ferocious bite")
       end
