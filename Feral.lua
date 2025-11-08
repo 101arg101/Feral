@@ -533,7 +533,7 @@ end
 
 function clawBite(opts)
   -- prowl, tiger's fury, pounce, rake, rip, claw-spam, ferocious bite
-  equipIdol(F_.altIdolL)
+  equipIdol("Idol of Ferocity")
   feralStealth(opts)
   feralFury(opts)
   if (opts.isTarget) then
@@ -556,7 +556,7 @@ end
 
 function clawBleed(opts)
   -- prowl, tiger's fury, pounce, rake, claw-spam, rip
-  testSwap()
+  testSwap("Idol of Ferocity")
   feralStealth(opts)
   feralFury(opts)
   if (opts.isTarget) then
@@ -586,7 +586,7 @@ end
 
 function shredBite(opts)
   -- prowl, tiger's fury, pounce, rip, rake, shred-spam, ferocious bite
-  equipIdol(F_.altIdolL)
+  equipIdol("Idol of the Emerald Rot")
   feralStealth(opts)
   feralFury(opts)
   if (opts.isTarget) then
@@ -609,7 +609,7 @@ end
 
 function shredBleed(opts)
   -- prowl, tiger's fury, pounce, rake, shred-spam, rip
-  testSwap()
+  testSwap("Idol of Savagery")
   feralStealth(opts)
   feralFury(opts)
   if (opts.isTarget) then
@@ -639,7 +639,7 @@ end
 
 function multiBleed(opts)
   -- prowl, tiger's fury, pounce, rake, rip, cycle target
-  equipIdol(F_.savageryIdolL)
+  equipIdol("Idol of savagery")
   feralStealth(opts)
   feralFury(opts)
   if (opts.isTarget) then
@@ -674,7 +674,7 @@ end
 
 function noBleedClaw(opts)
   -- prowl, tiger's fury, ravage, claw-spam, ferocious bite
-  equipIdol(F_.altIdolL)
+  equipIdol("Idol of Ferocity")
   feralStealth(opts)
   feralFury(opts)
   if (opts.isTarget) then
@@ -693,7 +693,7 @@ end
 
 function noBleedShred(opts)
   -- prowl, tiger's fury, ravage, shred-spam, ferocious bite
-  equipIdol(F_.altIdolL)
+  equipIdol("Idol of Laceration")
   feralStealth(opts)
   feralFury(opts)
   if (opts.isTarget) then
@@ -944,178 +944,115 @@ function einePally(sealName)
   end
 end
 
-function testInit()
-  F_.savageryIdolB = nil
-  F_.savageryIdolS = nil
-  F_.savageryIdolLink = nil
-  F_.altIdolB = nil
-  F_.altIdolS = nil
-  F_.altIdolN = nil
-  F_.altIdolL = nil
-  local equippedLink = GetInventoryItemLink("player", GetInventorySlotInfo("RangedSlot"))
-  local altIdols = {"Idol of the Wildshifter", "Idol of Ferocity", "Idol of the Emerald Rot", "Idol of Laceration"}
+Idol = {}
+Idol._index = idol
+idols = {}
+function Idol:new(name, idolBag, idolSlot, idolLink)
+  local obj= {
+    name = name
+    bag = idolBag
+    slot = idolSlot
+    link = idolLink
+  }
+  setmetatable(obj, Idol)
+  return obj
+end
 
-  for i,d in pairs(altIdols) do
-    if (equippedLink and string.find(equippedLink, d, 1, true)) then
-      F_.altIdolB = b
-      F_.altIdolS = s
-      F_.altIdolN = d
-      F_.altIdolL = equippedLink
-    end
-  end
+function Idol:positonSwap(idol1, idol2)
+  idol1.bag = idol2.bag
+  idol2.slot = idol2.slot
+  idol2.bag = nil
+  idol2.slot = nil
+  return idol1,idol2
+end
   
-  for b=0,4 do
-    for s=1,GetContainerNumSlots(b) do
-      local itemLink = GetContainerItemLink(b, s); -- |Hitem:6948:0:0:0:0:0:0:0|h[Idol of Ferocity]|h
-      
-      if (itemLink and string.find(itemLink, "Idol of Savagery", 1, true)) then
-        F_.savageryIdolB = b
-        F_.savageryIdolS = s
-        F_.savageryIdolL = itemLink
-      else
-        for i,d in pairs(altIdols) do
-          if (itemLink and not F_.altIdolN and string.find(itemLink, d, 1, true)) then
-            F_.altIdolB = b
-            F_.altIdolS = s
-            F_.altIdolN = d
-            F_.altIdolL = itemLink
-          end
+
+function contains(keyContainer,comparisonValue)
+  for _, v in ipairs(keyContainer) do
+        if v == value then
+          return true 
         end
+    end
+    return false
+end
+
+function testInit()
+  local equippedLink = GetInventoryItemLink("player", GetInventorySlotInfo("RangedSlot"))
+  local availableIdols = {"Idol of the Wildshifter", "Idol of Ferocity", "Idol of the Emerald Rot", "Idol of Laceration"}
+
+  for bag=0,4 do
+    for slot=1,GetContainerNumSlots(bag) do
+      local itemLink = GetContainerItemLink(bag, slot); -- |Hitem:6948:0:0:0:0:0:0:0|h[Idol of Ferocity]|h
+      if contains(availableIdols, localName=string.find(equippedLink, "%[.+%]")) then
+        idols[localName] = Idol:new(localName, b,s, itemLink)
       end
     end
   end
-  
-  local idolStatus = nil
 
   if (equippedLink ~= nil) then
-    if (string.find(equippedLink, F_.altIdolN)) then
-      idolStatus = "alt"
-      F_.altIdolL = equippedLink
-      local startPos, endPos = string.find(equippedLink, "%[.+%]");
-      F_.altIdolN = string.sub(equippedLink, startPos+1, endPos-1)
-    elseif (string.find(equippedLink, "Idol of Savagery")) then
-      idolStatus = "savagery"
-      F_.savageryIdolL = equippedLink
-    end
-    print("idol equipped: "..equippedLink)
-  end
-  
-  if(not F_.savageryIdolS) then
-    F_.savageryIdolS = F_.altIdolS
-    F_.savageryIdolB = F_.altIdolB
-  end
-
-  if(not F_.altIdolS) then
-    F_.altIdolS = F_.savageryIdolS 
-    F_.altIdolB = F_.savageryIdolB 
+    local idolName = string.find(equippedLink, "%[.+%]")
+    idols[idolName] = Idol:new(idolName, nil, nil, equippedLink)
+    print("idol equipped: "..idolName)
   end
 end
+
 
 function equipIdol(idolToEquip)
   if (F_.isIdolSwap) then
     local idolEquippedLink = GetInventoryItemLink("player", GetInventorySlotInfo("RangedSlot"))
-    if (idolToEquip ~= idolEquippedLink) then
-      if (idolToEquip == F_.altIdolL) then
-        print("  equip: "..F_.altIdolL)
-        PickupContainerItem(F_.altIdolB, F_.altIdolS);
-        EquipCursorItem(18);
-        if (F_.altIdolB ~= F_.savageryIdolB or F_.altIdolS ~= F_.savageryIdolS) then
-          F_.altIdolB = F_.savageryIdolB
-          F_.altIdolS = F_.savageryIdolS
-        end
-      elseif (idolToEquip == F_.savageryIdolL) then
-        print("  equip: "..F_.savageryIdolL)
-        PickupContainerItem(F_.savageryIdolB, F_.savageryIdolS);
-        EquipCursorItem(18);
-        if (F_.altIdolB ~= F_.savageryIdolB or F_.altIdolS ~= F_.savageryIdolS) then
-          F_.savageryIdolB = F_.altIdolB
-          F_.savageryIdolS = F_.altIdolS
-        end
-      end
+    eqIdol = idols[string.find(idolEquippedLink, "%[.+%]")]
+    target = idols[idolToEquip]
+    if eqIdol ~= nil and  target ~= nil then
+      Idol:positionSwap(eqIdol, target)
+      print("  equip: "..target.name)
+      PickupContainerItem(target.bag, target.slot);
+      EquipCursorItem(18);
+    elseif eqIdol == nil then
+      print("  No Idol Equipped")
+    elseif target == nil then
+      print("  The idol is not in your bags")
     end
-  end
+  else
+    print("  Unable to equip"..target.name)
 end
 
 function indexIdols()
   local equippedLink = GetInventoryItemLink("player", GetInventorySlotInfo("RangedSlot"))
-  local altIdols = {"Idol of the Wildshifter", "Idol of Ferocity", "Idol of the Emerald Rot", "Idol of Laceration"}
-  for i,d in pairs(altIdols) do
-    if (equippedLink and string.find(equippedLink, d, 1, true)) then
-      F_.altIdolB = nil
-      F_.altIdolS = nil
-      F_.altIdolN = d
-      F_.altIdolL = equippedLink
-    end
-  end
-  
-  for b=0,4 do
-    for s=1,GetContainerNumSlots(b) do
-      local itemLink = GetContainerItemLink(b, s); -- |Hitem:6948:0:0:0:0:0:0:0|h[Idol of Ferocity]|h
-      
-      if (itemLink and string.find(itemLink, "Idol of Savagery", 1, true)) then
-        F_.savageryIdolB = b
-        F_.savageryIdolS = s
-        F_.savageryIdolL = itemLink
-        -- if alt idol is equipped, set its coords to be equal to savagery's
-        if (F_.altIdolN and not F_.altIdolS) then
-          F_.altIdolB = b
-          F_.altIdolS = s
-        end
-      else
-        for i,d in pairs(altIdols) do
-          if (itemLink and not F_.altIdolN and string.find(itemLink, d, 1, true)) then
-            F_.altIdolB = b
-            F_.altIdolS = s
-            F_.altIdolN = d
-            F_.altIdolL = itemLink
-          end
-        end
+  local availableIdols = {"Idol of the Wildshifter", "Idol of Ferocity", "Idol of the Emerald Rot", "Idol of Laceration"}
+  for bag=0,4 do
+    for slot=1,GetContainerNumSlots(bag) do
+      local itemLink = GetContainerItemLink(bag, slot); -- |Hitem:6948:0:0:0:0:0:0:0|h[Idol of Ferocity]|h
+      if contains(availableIdols, localName=string.find(equippedLink, "%[.+%]")) then
+        idols[localName] = Idol:new(localName, b,s, itemLink)
       end
     end
   end
   
-  -- if you have idol of savagery and another idol to swap between, then enable idol swapping
-  if (F_.savageryIdolL and F_.altIdolL) then
-    F_.isIdolSwap = true
-    print("Feral idol swapping is enabled between "..F_.savageryIdolL.." and "..F_.altIdolL)
-  else
-    F_.isIdolSwap = false
-  end
-  
-  -- in case either the alt or the savagery idol is equipped, set its bag & slot # to match the other idol, because when they get swapped, they'll use that coordinate
-  if (not F_.savageryIdolS) then
-    F_.savageryIdolS = F_.altIdolS
-    F_.savageryIdolB = F_.altIdolB
-  end
-  if (not F_.altIdolS) then
-    F_.altIdolS = F_.savageryIdolS 
-    F_.altIdolB = F_.savageryIdolB 
+  -- enable swapping with multiple idols
+  for k,v in pairs(idols)
+    count = count+1
+    if count > 1 then
+      f_.isIdolSwap = true
+    else
+      f_.isIdolSwap = false
+    end
   end
 end
 
-function testSwap()
+function testSwap(idolToEquip)
   if (F_.isIdolSwap) then
     --local _TT,_TG=UnitExists("target"); local idol = GetInventoryItemLink("player", GetInventorySlotInfo("RangedSlot")); local idolEquipped = nil; if (idol ~= nil) then if (string.find(idol, "Idol of the Emerald Rot")) then idolEquipped = "ferocity";elseif (string.find(idol, "Idol of Savagery")) then idolEquipped = "savagery";end;end;if (Cursive.curses:HasCurse("rip",_TG,0)) then if(idolEquipped ~= "ferocity") then PickupContainerItem(_GlobalFerocityB,_GlobalFerocityS);EquipCursorItem(18);end;elseif(idolEquipped ~= "savagery") then PickupContainerItem(_GlobalSavageryB,_GlobalSavageryS);EquipCursorItem(18);end
     local _TT,_TG=UnitExists("target");
     local idolEquipped = GetInventoryItemLink("player", GetInventorySlotInfo("RangedSlot"))
+    eqIdol = idols[string.find(idolEquipped, "%[.+%]")]
+    target = idols[idolToEquip]
     
     if (_TT and Cursive.curses:HasCurse("rip", _TG, 0)) then
-      if (idolEquipped ~= F_.altIdolL) then
-        print("  equip: "..F_.altIdolL)
-        PickupContainerItem(F_.altIdolB, F_.altIdolS);
+      if (idolEquipped ~= target.name) then
+        print("  equip: "..target.name)
+        PickupContainerItem(target.bag, target.slot);
         EquipCursorItem(18);
-        if (F_.altIdolB ~= F_.savageryIdolB or F_.altIdolS ~= F_.savageryIdolS) then
-          F_.altIdolB = F_.savageryIdolB
-          F_.altIdolS = F_.savageryIdolS
-        end
-      end
-    elseif (idolEquipped ~= F_.savageryIdolL) then
-      print("  equip: "..F_.savageryIdolL)
-      PickupContainerItem(F_.savageryIdolB, F_.savageryIdolS);
-      EquipCursorItem(18);
-      if (F_.altIdolB ~= F_.savageryIdolB or F_.altIdolS ~= F_.savageryIdolS) then
-        F_.savageryIdolB = F_.altIdolB
-        F_.savageryIdolS = F_.altIdolS
+        Idol:positionSwap(eqIdol,target)
       end
     end
   end
